@@ -1,11 +1,10 @@
 #include "shell.h"
-#include <stdlib.h>
 
 /**
  * get_environ - returns the string array copy of our environ
  * @info: Structure containing potential arguments. Used to maintain
  *          constant function prototype.
- * Return: pointer to the string array
+ * Return: Always 0
  */
 char **get_environ(info_t *info)
 {
@@ -15,24 +14,24 @@ char **get_environ(info_t *info)
 		info->env_changed = 0;
 	}
 
-	return info->environ;
+	return (info->environ);
 }
 
 /**
- * unset_env - Remove an environment variable
+ * _unsetenv - Remove an environment variable
  * @info: Structure containing potential arguments. Used to maintain
  *        constant function prototype.
+ *  Return: 1 on delete, 0 otherwise
  * @var: the string env var property
- * Return: 1 on delete, 0 otherwise
  */
-int unset_env(info_t *info, char *var)
+int _unsetenv(info_t *info, char *var)
 {
 	list_t *node = info->env;
 	size_t i = 0;
 	char *p;
 
 	if (!node || !var)
-		return 0;
+		return (0);
 
 	while (node)
 	{
@@ -47,38 +46,33 @@ int unset_env(info_t *info, char *var)
 		node = node->next;
 		i++;
 	}
-	return info->env_changed;
+	return (info->env_changed);
 }
 
 /**
- * set_env - Initialize a new environment variable,
- *           or modify an existing one
+ * _setenv - Initialize a new environment variable,
+ *             or modify an existing one
  * @info: Structure containing potential arguments. Used to maintain
  *        constant function prototype.
  * @var: the string env var property
  * @value: the string env var value
- * Return: 0 on success, 1 on failure
+ *  Return: Always 0
  */
-int set_env(info_t *info, char *var, char *value)
+int _setenv(info_t *info, char *var, char *value)
 {
-	char *buf;
+	char *buf = NULL;
 	list_t *node;
 	char *p;
 
 	if (!var || !value)
-		return 0;
+		return (0);
 
-	buf = strdup(var);
+	buf = malloc(_strlen(var) + _strlen(value) + 2);
 	if (!buf)
-		return 1;
-
-	buf = realloc(buf, _strlen(buf) + _strlen(value) + 2);
-	if (!buf)
-		return 1;
-
+		return (1);
+	_strcpy(buf, var);
 	_strcat(buf, "=");
 	_strcat(buf, value);
-
 	node = info->env;
 	while (node)
 	{
@@ -88,11 +82,12 @@ int set_env(info_t *info, char *var, char *value)
 			free(node->str);
 			node->str = buf;
 			info->env_changed = 1;
-			return 0;
+			return (0);
 		}
 		node = node->next;
 	}
 	add_node_end(&(info->env), buf, 0);
+	free(buf);
 	info->env_changed = 1;
-	return 0;
+	return (0);
 }
